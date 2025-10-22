@@ -825,8 +825,8 @@ end
 
 return {
     Config = Config,
-    stopOptimizations = stopOptimizations,
-    applyOptimizations = applyae
+    stopOptimizations = function() Running= false end,
+    applyOptimizations = applya
 }
 end
 
