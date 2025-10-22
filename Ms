@@ -1,6 +1,4 @@
--- AntiLag Script (Loadstring Compatible Version)
--- Users can edit the config below without modifying the main script
-
+-- AntiLag Script - Configurable Version
 local Config = {
     ENABLED = true,
     OPTIMIZATION_INTERVAL = 30,
@@ -28,7 +26,16 @@ local Config = {
 }
 
 -- Main script execution
-local function MainScript()
+local function Main(ExternalConfig)
+    -- Merge external config with default config
+    if ExternalConfig and type(ExternalConfig) == "table" then
+        for key, value in pairs(ExternalConfig) do
+            if Config[key] ~= nil then
+                Config[key] = value
+            end
+        end
+    end
+
     local Players = game:GetService("Players")
     local Lighting = game:GetService("Lighting")
     local Terrain = workspace:FindFirstChildOfClass("Terrain")
@@ -39,11 +46,7 @@ local function MainScript()
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
 
-    -- Wait for local player if needed
-    while not LocalPlayer do
-        Players.PlayerAdded:Wait()
-        LocalPlayer = Players.LocalPlayer
-    end
+    -- script
 
     local function safeCall(func, name, ...)
         local success, err = pcall(func, ...)
@@ -184,13 +187,11 @@ local function MainScript()
     end
 
     local function fpsc()
-        safeCall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/Fps-counter/refs/heads/main/Fpsc", true))()
-        end, "fps_counter")
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/Fps-counter/refs/heads/main/Fpsc", true))()
     end
 
     local function shouldSkip(instance)
-        if LocalPlayer.Character and instance:IsDescendantOf(LocalPlayer.Character) then
+        if instance:IsDescendantOf(LocalPlayer.Character) then
             return true
         end
         
@@ -219,10 +220,10 @@ local function MainScript()
         end
     end
 
-    safeCall(function()
+    pcall(function()
         PhysicsService:CreateCollisionGroup(Config.COLLISION_GROUP_NAME)
         PhysicsService:CollisionGroupSetCollidable(Config.COLLISION_GROUP_NAME, Config.COLLISION_GROUP_NAME, false)
-    end, "collision_group_setup")
+    end)
 
     local function removePlayerAnimations()
         if not Config.REMOVE_ANIMATIONS then return end
@@ -727,7 +728,7 @@ local function MainScript()
     end
 
     local function removeOtherPlayerAccessories()
-        local localPlayer = LocalPlayer
+        local localPlayer = Players.LocalPlayer
         if not localPlayer then
             warn("LocalPlayer not available yet.")
             return
@@ -775,65 +776,71 @@ local function MainScript()
         selectiveTextureRemoval()
         monitorPerformance()
         RemoveMesh()
+        removeOtherPlayerAccessories()
     end
 
     -- Initialize the script
-    fpsc()
-    setSmoothPlastic()
-    RemoveMesh()
-
-    Players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function(character)
-            if Running then
-                task.wait(1)
-                safeCall(removePlayerAnimations, "new_player_animations")
-            end
-        end)
-    end)
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character then
-            safeCall(removePlayerAnimations, "initial_player_animations")
-        end
-    end
-
-    Players.PlayerAdded:Connect(function(player)
-        if player ~= LocalPlayer then
-            player.CharacterAdded:Connect(function()
-                task.wait(0.5) 
-                removeOtherPlayerAccessories()
+    local function initialize()
+        if Config.ENABLED then
+            fpsc()
+            setSmoothPlastic()
+            RemoveMesh()
+            applya()
+            
+            Players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function(character)
+                    if Running then
+                        task.wait(1)
+                        safeCall(removePlayerAnimations, "new_player_animations")
+                    end
+                end)
             end)
-        end
-    end)
-    removeOtherPlayerAccessories()
 
-    local function mainOptimizationLoop()
-        local lastHeavyOptimization = 0
-        local HEAVY_OPTIMIZATION_INTERVAL = 20 -- seconds
-        
-        while Running do
-            local currentTime = tick()
-            
-            if currentTime - lastHeavyOptimization >= HEAVY_OPTIMIZATION_INTERVAL then
-                safeCall(applya, "heavy_optimization")
-                lastHeavyOptimization = currentTime
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player.Character then
+                    safeCall(removePlayerAnimations, "initial_player_animations")
+                end
             end
+
+            local function mainOptimizationLoop()
+                local lastHeavyOptimization = 0
+                local HEAVY_OPTIMIZATION_INTERVAL = 20 -- seconds
+                
+                while Running do
+                    local currentTime = tick()
+                    
+                    if currentTime - lastHeavyOptimization >= HEAVY_OPTIMIZATION_INTERVAL then
+                        safeCall(applya, "heavy_optimization")
+                        lastHeavyOptimization = currentTime
+                    end
+                    
+                    safeCall(removePlayerAnimations, "player_animations")
+                    
+                    task.wait(Config.OPTIMIZATION_INTERVAL)
+                end
+            end
+
+            task.spawn(mainOptimizationLoop)
             
-            safeCall(removePlayerAnimations, "player_animations")
-            
-            task.wait(Config.OPTIMIZATION_INTERVAL)
+            Players.PlayerAdded:Connect(function(player)
+                if player ~= LocalPlayer then
+                    player.CharacterAdded:Connect(function()
+                        task.wait(0.5) 
+                        removeOtherPlayerAccessories()
+                    end)
+                end
+            end)
+            removeOtherPlayerAccessories()
         end
     end
-
-    task.spawn(mainOptimizationLoop)
 
     local function stopOptimizations()
         Running = false
         print("Optimizations stopped")
     end
 
-    -- Apply initial optimizations
-    applya()
+    -- Start the script
+    initialize()
 
     return {
         Config = Config,
@@ -842,5 +849,5 @@ local function MainScript()
     }
 end
 
--- Start the main script
-return MainScript()
+-- Return the main function for loadstring
+return Main
