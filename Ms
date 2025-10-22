@@ -1,4 +1,3 @@
--- AntiLag Script - Configurable Version
 local Config = {
     ENABLED = true,
     OPTIMIZATION_INTERVAL = 30,
@@ -25,9 +24,7 @@ local Config = {
     MEMORY_CLEANUP_THRESHOLD = 500,
 }
 
--- Main script execution
 local function Main(ExternalConfig)
-    -- Merge external config with default config
     if ExternalConfig and type(ExternalConfig) == "table" then
         for key, value in pairs(ExternalConfig) do
             if Config[key] ~= nil then
@@ -46,8 +43,6 @@ local function Main(ExternalConfig)
     local LocalPlayer = Players.LocalPlayer
     local Camera = workspace.CurrentCamera
 
-    -- script
-
     local function safeCall(func, name, ...)
         local success, err = pcall(func, ...)
         if not success then
@@ -56,9 +51,7 @@ local function Main(ExternalConfig)
         return success
     end
 
-    -- stuff
     local Running = Config.ENABLED
-
     local function setSmoothPlastic()
         if not Config.SMOOTH_PLASTIC_ENABLED then return end
         
@@ -68,7 +61,6 @@ local function Main(ExternalConfig)
             if player and player.Character and instance:IsDescendantOf(player.Character) then
                 return
             end
-
             if instance:IsA("BasePart") then
                 instance.Material = Enum.Material.SmoothPlastic
                 instance.Reflectance = 0
@@ -76,14 +68,13 @@ local function Main(ExternalConfig)
                 instance.Transparency = 1
             end
         end
-
         for _, instance in ipairs(Workspace:GetDescendants()) do
             handleInstance(instance)
         end
         
         Workspace.DescendantAdded:Connect(handleInstance)
     end
-
+    setSmoothPlastic()
     local function RemoveMesh(target)
         local textureKeywords = {
             "chair", "seat", "stool", "bench", "coffee", "fruit", "paper", "document", 
@@ -185,11 +176,11 @@ local function Main(ExternalConfig)
             end
         end
     end
-
+    RemoveMesh()
     local function fpsc()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hm5650/Fps-counter/refs/heads/main/Fpsc", true))()
     end
-
+    fpsc()
     local function shouldSkip(instance)
         if instance:IsDescendantOf(LocalPlayer.Character) then
             return true
@@ -205,7 +196,6 @@ local function Main(ExternalConfig)
         
         return false
     end
-
     local function optimizeUI()
         local function optimizeGuiElement(gui)
             if gui:IsA("ImageLabel") or gui:IsA("ImageButton") then
@@ -219,12 +209,10 @@ local function Main(ExternalConfig)
             safeCall(function() optimizeGuiElement(gui) end, "ui_optimization")
         end
     end
-
     pcall(function()
         PhysicsService:CreateCollisionGroup(Config.COLLISION_GROUP_NAME)
         PhysicsService:CollisionGroupSetCollidable(Config.COLLISION_GROUP_NAME, Config.COLLISION_GROUP_NAME, false)
     end)
-
     local function removePlayerAnimations()
         if not Config.REMOVE_ANIMATIONS then return end
         
@@ -310,7 +298,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function applyGraySky()
         if not Config.GRAY_SKY_ENABLED then return end
         
@@ -331,7 +318,6 @@ local function Main(ExternalConfig)
         sky.StarCount = 0
         sky.Parent = Lighting
     end
-
     local function applyFullBright()
         if not Config.FULL_BRIGHT_ENABLED then return end
         
@@ -341,7 +327,6 @@ local function Main(ExternalConfig)
         Lighting.Ambient = Color3.new(1, 1, 1)
         Lighting.ExposureCompensation = 0
     end
-
     local function simplifyTerrain()
         if Terrain then
             Terrain.Decoration = false
@@ -352,7 +337,6 @@ local function Main(ExternalConfig)
             Terrain:SetAttribute("WaterReflectance", 0)
         end
     end
-
     local function optimizeLighting()
         Lighting.FogEnd = 1000000
         Lighting.FogStart = 0
@@ -361,14 +345,12 @@ local function Main(ExternalConfig)
         Lighting.GlobalShadows = false
         Lighting.EnvironmentDiffuseScale = 0
         Lighting.EnvironmentSpecularScale = 0
-
         for _, v in pairs(Lighting:GetChildren()) do
             if v:IsA("PostEffect") then
                 v:Destroy()
             end
         end
     end
-
     local function optimizeLightingAdvanced()
         local Lighting = game:GetService("Lighting")
         
@@ -388,7 +370,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function convertToLowPoly()
         if not Config.LOW_POLY_CONVERSION then return end
         
@@ -523,7 +504,6 @@ local function Main(ExternalConfig)
         
         pcall(processWorkspace)
     end
-
     local function removeReflectionsAndOptimize()
         for _, obj in pairs(workspace:GetDescendants()) do
             if obj:IsA("BasePart") then
@@ -557,7 +537,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function disableConstraints()
         if not Config.DISABLE_CONSTRAINTS then return end
         
@@ -569,7 +548,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function throttleTextures()
         if not Config.THROTTLE_TEXTURES then return end
         
@@ -583,7 +561,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function optimizePhysics()
         if not Config.OPTIMIZE_PHYSICS then return end
         
@@ -602,7 +579,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function throttleParticles()
         if not Config.THROTTLE_PARTICLES then return end
         
@@ -614,7 +590,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function Core()
         settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
         settings().Physics.AllowSleep = true
@@ -629,7 +604,6 @@ local function Main(ExternalConfig)
             setfpscap(Config.FPS_CAP)
         end
     end
-
     local function removeAllTextures()
         local texturesRemoved = 0
         
@@ -646,7 +620,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function initializeCollisionGroups()
         local success = pcall(function()
             PhysicsService:CreateCollisionGroup(Config.COLLISION_GROUP_NAME)
@@ -657,14 +630,12 @@ local function Main(ExternalConfig)
             warn("Failed to initialize collision groups")
         end
     end
-
     local function binmem()
         local memory = collectgarbage("count")
         if memory > Config.MEMORY_CLEANUP_THRESHOLD then
             collectgarbage("collect")
         end
     end
-
     local function selectiveTextureRemoval()
         if not Config.SELECTIVE_TEXTURE_REMOVAL then return end
         
@@ -692,7 +663,6 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function monitorPerformance()
         if not Config.PERFORMANCE_MONITORING then return end
         
@@ -704,7 +674,6 @@ local function Main(ExternalConfig)
             applya()
         end
     end
-
     local function optimizeUIAdvanced()
         local coreGui = game:GetService("CoreGui")
         
@@ -726,18 +695,14 @@ local function Main(ExternalConfig)
             end
         end
     end
-
     local function removeOtherPlayerAccessories()
-        local localPlayer = Players.LocalPlayer
         if not localPlayer then
             warn("LocalPlayer not available yet.")
             return
         end
-
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= localPlayer then
                 local character = player.Character
-
                 if character then
                     for _, descendant in ipairs(character:GetChildren()) do
                         if descendant:IsA("Accessory") then
@@ -747,10 +712,17 @@ local function Main(ExternalConfig)
                 end
             end
         end
-
         print("Accessories removed from other players' characters.")
     end
-
+    Players.PlayerAdded:Connect(function(player)
+        if player ~= localPlayer then
+            player.CharacterAdded:Connect(function()
+                task.wait(0.5) 
+                removeOtherPlayerAccessories()
+            end)
+        end
+    end)
+    removeOtherPlayerAccessories()
     local function applya()
         if not Config.ENABLED then return end
         
@@ -776,72 +748,43 @@ local function Main(ExternalConfig)
         selectiveTextureRemoval()
         monitorPerformance()
         RemoveMesh()
-        removeOtherPlayerAccessories()
     end
-
-    -- Initialize the script
-    local function initialize()
-        if Config.ENABLED then
-            fpsc()
-            setSmoothPlastic()
-            RemoveMesh()
-            applya()
-            
-            Players.PlayerAdded:Connect(function(player)
-                player.CharacterAdded:Connect(function(character)
-                    if Running then
-                        task.wait(1)
-                        safeCall(removePlayerAnimations, "new_player_animations")
-                    end
-                end)
-            end)
-
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player.Character then
-                    safeCall(removePlayerAnimations, "initial_player_animations")
-                end
+    applya()
+    Players.PlayerAdded:Connect(function(player)
+        player.CharacterAdded:Connect(function(character)
+            if Running then
+                task.wait(1)
+                safeCall(removePlayerAnimations, "new_player_animations")
             end
-
-            local function mainOptimizationLoop()
-                local lastHeavyOptimization = 0
-                local HEAVY_OPTIMIZATION_INTERVAL = 20 -- seconds
-                
-                while Running do
-                    local currentTime = tick()
-                    
-                    if currentTime - lastHeavyOptimization >= HEAVY_OPTIMIZATION_INTERVAL then
-                        safeCall(applya, "heavy_optimization")
-                        lastHeavyOptimization = currentTime
-                    end
-                    
-                    safeCall(removePlayerAnimations, "player_animations")
-                    
-                    task.wait(Config.OPTIMIZATION_INTERVAL)
-                end
-            end
-
-            task.spawn(mainOptimizationLoop)
-            
-            Players.PlayerAdded:Connect(function(player)
-                if player ~= LocalPlayer then
-                    player.CharacterAdded:Connect(function()
-                        task.wait(0.5) 
-                        removeOtherPlayerAccessories()
-                    end)
-                end
-            end)
-            removeOtherPlayerAccessories()
+        end)
+    end)
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            safeCall(removePlayerAnimations, "initial_player_animations")
         end
     end
-
+    local function mainOptimizationLoop()
+        local lastHeavyOptimization = 0
+        local HEAVY_OPTIMIZATION_INTERVAL = 20
+        
+        while Running do
+            local currentTime = tick()
+            
+            if currentTime - lastHeavyOptimization >= HEAVY_OPTIMIZATION_INTERVAL then
+                safeCall(applya, "heavy_optimization")
+                lastHeavyOptimization = currentTime
+            end
+            
+            safeCall(removePlayerAnimations, "player_animations")
+            
+            task.wait(Config.OPTIMIZATION_INTERVAL)
+        end
+    end
+    task.spawn(mainOptimizationLoop)
     local function stopOptimizations()
         Running = false
         print("Optimizations stopped")
     end
-
-    -- Start the script
-    initialize()
-
     return {
         Config = Config,
         stopOptimizations = stopOptimizations,
@@ -849,5 +792,4 @@ local function Main(ExternalConfig)
     }
 end
 
--- Return the main function for loadstring
 return Main
