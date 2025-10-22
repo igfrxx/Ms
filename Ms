@@ -1,16 +1,4 @@
-local Players = game:GetService("Players")
-local Lighting = game:GetService("Lighting")
-local Terrain = workspace:FindFirstChildOfClass("Terrain")
-local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui")
-local PhysicsService = game:GetService("PhysicsService")
-local workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local PZ = {}
-
--- config yea you can edit this to your liking if you hate the over optimization
+-- AntiLag Script with External Config
 local Config = {
     ENABLED = true,
     OPTIMIZATION_INTERVAL = 30,
@@ -36,6 +24,19 @@ local Config = {
     FPS_CAP = 1000,
     MEMORY_CLEANUP_THRESHOLD = 500,
 }
+
+-- Main script execution
+local function Main(Config)
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local PhysicsService = game:GetService("PhysicsService")
+local workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
 local function safeCall(func, name, ...)
     local success, err = pcall(func, ...)
@@ -825,7 +826,8 @@ end
 return {
     Config = Config,
     stopOptimizations = stopOptimizations,
-    applyOptimizations = applya
+    applyOptimizations = applyae
 }
+end
 
-return PZ
+return Main(Config)
